@@ -9,11 +9,8 @@ RemoteTestSiteFSM::RemoteTestSiteFSM()
     pinMode(SENSOR_VH400_ADC_PIN, INPUT);
     pinMode(SENSOR_THERM200_ADC_PIN, INPUT);
 
-    controller.AddSensor(&vh400);
-    controller.AddSensor(&therm200);
-
-    controller.SetFrequency(MeasurementType::kMeasurementTypeTemperature, 60000);
-    controller.SetFrequency(MeasurementType::kMeasurementTypeVwc, 60000);
+    controller.SetFrequency(RemoteTestSite_MeasurementInfo::RemoteTestSite_MeasurementInfo_MEASUREMENT_INFO_VH400_VWC, 60000);
+    controller.SetFrequency(RemoteTestSite_MeasurementInfo::RemoteTestSite_MeasurementInfo_MEASUREMENT_INFO_THERM200_TEMPERATURE, 60000);
 
     this->fsm = FiniteStateMachine(&state_sleep);
 

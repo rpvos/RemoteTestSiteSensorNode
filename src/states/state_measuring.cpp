@@ -3,7 +3,6 @@
 StateMeasuring::StateMeasuring(SensorController *controller)
 {
     this->amount_of_measurements = 0;
-    this->measurements = nullptr;
 
     this->controller = controller;
 }
@@ -13,16 +12,15 @@ StateMeasuring::~StateMeasuring()
     this->ClearMeasurements();
 }
 
-void StateMeasuring::AddMeasurement(RemoteTestSite_Measurement measurement)
+bool StateMeasuring::AddMeasurement(RemoteTestSite_Measurement measurement)
 {
-    RemoteTestSite_Measurement *temp = new RemoteTestSite_Measurement[this->amount_of_measurements + 1];
-    memcpy(temp, this->measurements, sizeof(RemoteTestSite_Measurement) * this->amount_of_measurements);
-
-    temp[amount_of_measurements] = measurement;
-    this->amount_of_measurements++;
-
-    delete[] this->measurements;
-    this->measurements = temp;
+    if (this->amount_of_measurements < MEASUREMENTS_BUFFER_SIZE)
+    {
+        measurements[amount_of_measurements] = measurement;
+        this->amount_of_measurements++;
+        return true;
+    }
+    return false;
 }
 
 size_t StateMeasuring::GetAmountOfMeasurements()
@@ -37,7 +35,6 @@ RemoteTestSite_Measurement *StateMeasuring::GetMeasurements()
 
 void StateMeasuring::ClearMeasurements()
 {
-    delete[] this->measurements;
     this->amount_of_measurements = 0;
 }
 

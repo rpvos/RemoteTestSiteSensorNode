@@ -21,10 +21,15 @@ void StateConnectToBasestation::ExecuteFunction()
 {
     if (connection_handler != nullptr)
     {
-        // TODO: Remove
-        //  succes = connection_handler->Connect(0);
-        succes = true;
+        return;
     }
+
+    if (!connection_handler->Begin())
+    {
+        return;
+    }
+
+    succes = connection_handler->Connect(0);
 }
 
 void StateConnectToBasestation::PostFunction()

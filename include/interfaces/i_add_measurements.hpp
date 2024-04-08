@@ -8,7 +8,7 @@ class IAddMeasurements
 {
 private:
 public:
-    virtual void AddMeasurement(RemoteTestSite_Measurement measurement) = 0;
+    virtual bool AddMeasurement(RemoteTestSite_Measurement measurement) = 0;
 };
 
 #endif // I_ADD_MEASUREMENTS_HPP_

@@ -26,8 +26,8 @@ void StateGetMeasurement::ExecuteFunction()
     }
 
     size_t amount = this->controller->GetMeasurementAmount();
-    float measurements[amount];
-    MeasurementType types[amount];
+    uint32_t measurements[amount];
+    RemoteTestSite_MeasurementInfo types[amount];
     if (!this->controller->GetMeasurements(measurements))
     {
         return;
@@ -44,10 +44,16 @@ void StateGetMeasurement::ExecuteFunction()
         measurement.has_value = true;
         measurement.value = measurements[i];
 
-        measurement.has_type = true;
-        measurement.type = RemoteTestSite_MeasurementType(types[i]);
+        measurement.has_info = true;
+        measurement.info = RemoteTestSite_MeasurementInfo(types[i]);
 
-        callback->AddMeasurement(measurement);
+        succes = callback->AddMeasurement(measurement);
+#ifdef PRINT_DEBUG
+        if (!succes)
+        {
+            Serial.println("Not enough space in measurement buffer");
+        }
+#endif
     }
 
     this->succes = true;

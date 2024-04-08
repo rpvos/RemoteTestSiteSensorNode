@@ -39,16 +39,19 @@ bool temp_predicate();
 class RemoteTestSiteFSM
 {
 private:
-    SensorController controller = SensorController();
+    static const size_t kSensorAmount = 2;
+    ASensorAdapter sensors[kSensorAmount] = {
+        SensorVh400Adapter(SENSOR_VH400_ENABLE_PIN, SENSOR_VH400_ADC_PIN, SENSOR_ADC_RESOLUTION, SENSOR_VOLTAGE),
+        SensorTherm200Adapter(SENSOR_THERM200_ENABLE_PIN, SENSOR_THERM200_ADC_PIN, SENSOR_ADC_RESOLUTION, SENSOR_VOLTAGE)};
 
-    SensorVh400Adapter vh400 = SensorVh400Adapter(SENSOR_VH400_ENABLE_PIN, SENSOR_VH400_ADC_PIN, SENSOR_ADC_RESOLUTION, SENSOR_VOLTAGE);
-    SensorTherm200Adapter therm200 = SensorTherm200Adapter(SENSOR_THERM200_ENABLE_PIN, SENSOR_THERM200_ADC_PIN, SENSOR_ADC_RESOLUTION, SENSOR_VOLTAGE);
+    SensorController controller = SensorController(sensors, kSensorAmount);
 
     FiniteStateMachine fsm = FiniteStateMachine();
 
     RemoteTestSiteSensorNode message_handler = RemoteTestSiteSensorNode();
     UsrLg206PAdapter communication_device = UsrLg206PAdapter();
-    ProtoHandler proto_handler = ProtoHandler();
+    ProtoHelper proto_helper = ProtoHelper();
+    ProtoHandler proto_handler = ProtoHandler(&proto_helper);
 
     ConnectionHandler connection_handler = ConnectionHandler(&message_handler, &communication_device, &proto_handler);
 

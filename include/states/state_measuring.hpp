@@ -8,10 +8,14 @@
 #include "sensor_controller.hpp"
 #include "succes_predicate.hpp"
 
+#ifndef MEASUREMENTS_BUFFER_SIZE
+#define MEASUREMENTS_BUFFER_SIZE 8
+#endif
+
 class StateMeasuring : public AState, public SuccesPredicate, public IGetMeasurements, public IAddMeasurements
 {
 private:
-    RemoteTestSite_Measurement *measurements;
+    RemoteTestSite_Measurement measurements[MEASUREMENTS_BUFFER_SIZE];
     unsigned short amount_of_measurements;
 
     SensorController *controller;
@@ -20,7 +24,7 @@ public:
     StateMeasuring(SensorController *controller);
     ~StateMeasuring();
 
-    void AddMeasurement(RemoteTestSite_Measurement measurement) override;
+    bool AddMeasurement(RemoteTestSite_Measurement measurement) override;
     size_t GetAmountOfMeasurements() override;
     RemoteTestSite_Measurement *GetMeasurements() override;
     void ClearMeasurements();
