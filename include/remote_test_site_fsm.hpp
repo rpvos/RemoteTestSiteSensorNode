@@ -6,14 +6,19 @@
 #include <sensor_controller.hpp>
 #include <sensors/sensor_therm200_adapter.hpp>
 #include <sensors/sensor_vh400_adapter.hpp>
+#include <sensors/sensor_murata_soil_sensor_adapter.hpp>
 #include <Arduino.h>
 
-#define SENSOR_VOLTAGE 5.0
-#define SENSOR_ADC_RESOLUTION 10
 #define SENSOR_THERM200_ENABLE_PIN 4
-#define SENSOR_THERM200_ADC_PIN 34
 #define SENSOR_VH400_ENABLE_PIN 5
-#define SENSOR_VH400_ADC_PIN 35
+#define RS485_MURATA_SOIL_SENSOR_ENABLE_PIN 6
+#define SENSOR_MURATA_SOIL_SENSOR_ENABLE_PIN 7
+
+#define SENSOR_THERM200_ADC_PIN A0
+#define SENSOR_VH400_ADC_PIN A1
+
+#define SENSOR_VOLTAGE 3.0
+#define SENSOR_ADC_RESOLUTION 10
 
 // Include all states
 #include <states/state_sleep.hpp>
@@ -39,10 +44,14 @@ bool temp_predicate();
 class RemoteTestSiteFSM
 {
 private:
-    static const size_t kSensorAmount = 2;
-    ASensorAdapter sensors[kSensorAmount] = {
-        SensorVh400Adapter(SENSOR_VH400_ENABLE_PIN, SENSOR_VH400_ADC_PIN, SENSOR_ADC_RESOLUTION, SENSOR_VOLTAGE),
-        SensorTherm200Adapter(SENSOR_THERM200_ENABLE_PIN, SENSOR_THERM200_ADC_PIN, SENSOR_ADC_RESOLUTION, SENSOR_VOLTAGE)};
+    RS485 rs485_2 = RS485(RS485_MURATA_SOIL_SENSOR_ENABLE_PIN, RS485_MURATA_SOIL_SENSOR_ENABLE_PIN, &Serial2);
+
+    static const size_t kSensorAmount = 3;
+    SensorVh400Adapter vh400 = SensorVh400Adapter(SENSOR_VH400_ENABLE_PIN, SENSOR_VH400_ADC_PIN, SENSOR_ADC_RESOLUTION, SENSOR_VOLTAGE);
+    SensorTherm200Adapter therm200 = SensorTherm200Adapter(SENSOR_THERM200_ENABLE_PIN, SENSOR_THERM200_ADC_PIN, SENSOR_ADC_RESOLUTION, SENSOR_VOLTAGE);
+    SensorMurataSoilSensorAdapter murata_soil_sensor = SensorMurataSoilSensorAdapter(&rs485_2, SENSOR_MURATA_SOIL_SENSOR_ENABLE_PIN);
+
+    ISensorAdapter *sensors[kSensorAmount] = {&vh400, &therm200, &murata_soil_sensor};
 
     SensorController controller = SensorController(sensors, kSensorAmount);
 
@@ -66,14 +75,19 @@ private:
     StateConnectToBasestation state_connect_to_basestation = StateConnectToBasestation(&connection_handler);
     StateRequestUpdates state_request_updates = StateRequestUpdates();
     StateImplementUpdates state_implement_updates = StateImplementUpdates();
-    StateSendMeasurements state_send_measurements = StateSendMeasurements(&connection_handler, &controller);
+    StateSendMeasurements state_send_measurements = StateSendMeasurements(&connection_handler, &state_measuring);
     StateSaveMeasurements state_save_measurements = StateSaveMeasurements();
 
-    PredicateTransition predicate_transitions[9] = {
+    PredicateTransition predicate_transitions[11] = {
+        // Sensors have measured
+        PredicateTransition(&state_measuring, &state_connect_to_basestation, &state_measuring),
+        // Sensors need measuring
+        PredicateTransition(&state_measuring, &state_start_sensor, &temp_predicate),
         PredicateTransition(&state_start_measurement, &state_wait_for_measurement, &state_start_measurement),
         PredicateTransition(&state_wait_for_measurement, &state_get_measurement, &state_wait_for_measurement),
         PredicateTransition(&state_get_measurement, &state_process_measurement, &state_get_measurement),
-        PredicateTransition(&state_process_measurement, &state_connect_to_basestation, &temp_predicate),
+        PredicateTransition(&state_process_measurement, &state_measuring, &temp_predicate),
+        // Communication states
         PredicateTransition(&state_connect_to_basestation, &state_request_updates, &temp_predicate),
         PredicateTransition(&state_request_updates, &state_implement_updates, &temp_predicate),
         PredicateTransition(&state_implement_updates, &state_send_measurements, &temp_predicate),
@@ -84,7 +98,7 @@ private:
 
     TimedTransition timed_transitions[3] = {
         // Time for new measurement
-        TimedTransition(&state_sleep, &state_start_sensor, &state_sleep),
+        TimedTransition(&state_sleep, &state_measuring, &state_sleep),
         // Sensor has woken up
         TimedTransition(&state_start_sensor, &state_start_measurement, &state_start_sensor),
         // Timeout connection

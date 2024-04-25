@@ -4,16 +4,16 @@
 #include <a_state.hpp>
 #include <succes_predicate.hpp>
 #include <connection_handler.hpp>
-#include <sensor_controller.hpp>
+#include <interfaces/i_get_measurements.hpp>
 
 class StateSendMeasurements : public AState, public SuccesPredicate
 {
 private:
-    ConnectionHandler *handler;
-    SensorController *controller;
+    ConnectionHandler *connection_handler;
+    IGetMeasurements *measurement_handler;
 
 public:
-    StateSendMeasurements(ConnectionHandler *handler, SensorController *controller);
+    StateSendMeasurements(ConnectionHandler *handler, IGetMeasurements *measurement_handler);
     ~StateSendMeasurements();
 
     void PreFunction() override;

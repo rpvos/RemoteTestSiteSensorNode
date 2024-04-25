@@ -10,6 +10,7 @@ private:
 public:
     virtual size_t GetAmountOfMeasurements() = 0;
     virtual RemoteTestSite_Measurement *GetMeasurements() = 0;
+    virtual void ClearMeasurements() = 0;
 };
 
 #endif // I_GET_MEASUREMENTS_HPP_

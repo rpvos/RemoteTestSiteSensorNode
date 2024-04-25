@@ -11,9 +11,7 @@ StateRequestUpdates::~StateRequestUpdates()
 
 void StateRequestUpdates::PreFunction()
 {
-#ifdef DEBUG_PRINT
     Serial.println("Request updates");
-#endif
 }
 
 void StateRequestUpdates::ExecuteFunction()

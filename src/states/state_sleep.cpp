@@ -13,9 +13,7 @@ StateSleep::~StateSleep()
 
 void StateSleep::PreFunction()
 {
-#ifdef DEBUG_PRINT
     Serial.println("Sleep started");
-#endif
 }
 void StateSleep::ExecuteFunction()
 {
@@ -25,9 +23,7 @@ void StateSleep::ExecuteFunction()
 }
 void StateSleep::PostFunction()
 {
-#ifdef DEBUG_PRINT
-    Serial.println("\nSleep done");
-#endif
+    Serial.println("Sleep done");
 }
 
 unsigned long StateSleep::GetDurationInMs()

@@ -6,11 +6,19 @@ RemoteTestSiteFSM::RemoteTestSiteFSM()
 {
     pinMode(SENSOR_VH400_ENABLE_PIN, OUTPUT);
     pinMode(SENSOR_THERM200_ENABLE_PIN, OUTPUT);
+    pinMode(SENSOR_MURATA_SOIL_SENSOR_ENABLE_PIN, OUTPUT);
     pinMode(SENSOR_VH400_ADC_PIN, INPUT);
     pinMode(SENSOR_THERM200_ADC_PIN, INPUT);
 
-    controller.SetFrequency(RemoteTestSite_MeasurementInfo::RemoteTestSite_MeasurementInfo_MEASUREMENT_INFO_VH400_VWC, 60000);
-    controller.SetFrequency(RemoteTestSite_MeasurementInfo::RemoteTestSite_MeasurementInfo_MEASUREMENT_INFO_THERM200_TEMPERATURE, 60000);
+    controller.SetFrequency(
+        RemoteTestSite_MeasurementInfo::RemoteTestSite_MeasurementInfo_MEASUREMENT_INFO_VH400_VWC,
+        120000);
+    controller.SetFrequency(
+        RemoteTestSite_MeasurementInfo::RemoteTestSite_MeasurementInfo_MEASUREMENT_INFO_THERM200_TEMPERATURE,
+        60000);
+    controller.SetFrequency(
+        RemoteTestSite_MeasurementInfo::RemoteTestSite_MeasurementInfo_MEASUREMENT_INFO_MURATA_TEMPERATURE,
+        120000);
 
     this->fsm = FiniteStateMachine(&state_sleep);
 

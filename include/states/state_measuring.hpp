@@ -6,19 +6,21 @@
 #include "interfaces/i_get_measurements.hpp"
 #include "interfaces/i_add_measurements.hpp"
 #include "sensor_controller.hpp"
-#include "succes_predicate.hpp"
+#include <i_predicate.hpp>
 
 #ifndef MEASUREMENTS_BUFFER_SIZE
 #define MEASUREMENTS_BUFFER_SIZE 8
 #endif
 
-class StateMeasuring : public AState, public SuccesPredicate, public IGetMeasurements, public IAddMeasurements
+class StateMeasuring : public AState, public IPredicate, public IGetMeasurements, public IAddMeasurements
 {
 private:
     RemoteTestSite_Measurement measurements[MEASUREMENTS_BUFFER_SIZE];
     unsigned short amount_of_measurements;
 
     SensorController *controller;
+
+    bool is_done_measuring;
 
 public:
     StateMeasuring(SensorController *controller);
@@ -27,7 +29,9 @@ public:
     bool AddMeasurement(RemoteTestSite_Measurement measurement) override;
     size_t GetAmountOfMeasurements() override;
     RemoteTestSite_Measurement *GetMeasurements() override;
-    void ClearMeasurements();
+    void ClearMeasurements() override;
+
+    bool Predicate() override;
 
     void PreFunction() override;
     void ExecuteFunction() override;

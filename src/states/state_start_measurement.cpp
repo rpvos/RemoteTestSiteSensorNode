@@ -13,6 +13,7 @@ StateStartMeasurement::~StateStartMeasurement()
 
 void StateStartMeasurement::PreFunction()
 {
+    Serial.println("Starting measurement");
 }
 
 void StateStartMeasurement::ExecuteFunction()

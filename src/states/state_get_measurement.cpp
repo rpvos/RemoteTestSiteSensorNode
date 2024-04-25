@@ -13,9 +13,7 @@ StateGetMeasurement::~StateGetMeasurement()
 
 void StateGetMeasurement::PreFunction()
 {
-#ifdef DEBUG_PRINT
     Serial.println("Getting measurements");
-#endif
 }
 
 void StateGetMeasurement::ExecuteFunction()
@@ -48,14 +46,15 @@ void StateGetMeasurement::ExecuteFunction()
         measurement.info = RemoteTestSite_MeasurementInfo(types[i]);
 
         succes = callback->AddMeasurement(measurement);
-#ifdef PRINT_DEBUG
+
         if (!succes)
         {
             Serial.println("Not enough space in measurement buffer");
         }
-#endif
     }
 
+    // Update time when measurement is last done
+    this->controller->UpdateTimeLastMeasurement();
     this->succes = true;
 }
 

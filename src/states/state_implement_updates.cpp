@@ -11,9 +11,7 @@ StateImplementUpdates::~StateImplementUpdates()
 
 void StateImplementUpdates::PreFunction()
 {
-#ifdef DEBUG_PRINT
     Serial.println("Implement updates");
-#endif
 }
 
 void StateImplementUpdates::ExecuteFunction()

@@ -12,19 +12,22 @@ StateConnectToBasestation::~StateConnectToBasestation()
 
 void StateConnectToBasestation::PreFunction()
 {
-#ifdef DEBUG_PRINT
     Serial.println("Connecting to base station");
-#endif
-}
-
-void StateConnectToBasestation::ExecuteFunction()
-{
-    if (connection_handler != nullptr)
+    if (connection_handler == nullptr)
     {
         return;
     }
 
-    if (!connection_handler->Begin())
+    while (!connection_handler->Begin())
+    {
+        Serial.println("Begin communication not succesfull");
+        delay(1000);
+    }
+}
+
+void StateConnectToBasestation::ExecuteFunction()
+{
+    if (connection_handler == nullptr)
     {
         return;
     }

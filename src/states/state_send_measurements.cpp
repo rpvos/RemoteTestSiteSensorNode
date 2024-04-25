@@ -1,62 +1,54 @@
 #include "states/state_send_measurements.hpp"
 
-StateSendMeasurements::StateSendMeasurements(ConnectionHandler *handler, SensorController *controller)
+StateSendMeasurements::StateSendMeasurements(ConnectionHandler *connection_handler, IGetMeasurements *measurement_handler)
 {
-    this->handler = handler;
-    this->controller = controller;
+    this->connection_handler = connection_handler;
+    this->measurement_handler = measurement_handler;
 }
 
 StateSendMeasurements::~StateSendMeasurements()
 {
-    this->handler = nullptr;
-    this->controller = nullptr;
+    this->connection_handler = nullptr;
+    this->measurement_handler = nullptr;
 }
 
 void StateSendMeasurements::PreFunction()
 {
-#ifdef DEBUG_PRINT
     Serial.println("Sending measurements");
-#endif
 }
 
 void StateSendMeasurements::ExecuteFunction()
 {
-    if (handler != nullptr && controller != nullptr)
+    if (connection_handler == nullptr && measurement_handler == nullptr)
     {
-        size_t size = controller->GetMeasurementAmount();
-        uint32_t measurements[size];
-        RemoteTestSite_MeasurementInfo measurement_types[size];
-        if (controller->GetMeasurements(measurements) &&
-            controller->GetMeasurementTypes(measurement_types))
-        {
-
-            // Repeat the write when it was not succesfull
-            bool succesfull_write = false;
-            for (size_t i = 0; i < size; i++)
-            {
-                RemoteTestSite_Message message = RemoteTestSite_Message_init_zero;
-                message.which_function_info = RemoteTestSite_Message_measurement_tag;
-
-                RemoteTestSite_Measurement measurement = RemoteTestSite_Measurement_init_zero;
-                measurement.has_value = true;
-                measurement.value = measurements[i];
-                measurement.has_info = true;
-                measurement.info = RemoteTestSite_MeasurementInfo((int)measurement_types[i]);
-
-                message.function_info.measurement = measurement;
-                succesfull_write = handler->Write(message);
-                if (!succesfull_write)
-                {
-#ifdef PRINT_DEBUG
-                    Serial.println("Measurement write was not succesfull");
-#endif
-                    continue;
-                }
-
-                // TODO: wait for acknowledge and maybe delay between messages
-            }
-        }
+        return;
     }
+
+    const size_t size = measurement_handler->GetAmountOfMeasurements();
+    const RemoteTestSite_Measurement *measurements = measurement_handler->GetMeasurements();
+
+    // Send measurements 1 by 1
+    for (size_t i = 0; i < size; i++)
+    {
+        RemoteTestSite_Message message = RemoteTestSite_Message_init_zero;
+        message.which_function_info = RemoteTestSite_Message_measurement_tag;
+
+        message.function_info.measurement = measurements[i];
+        bool succesfull_write = connection_handler->Write(message);
+        if (!succesfull_write)
+        {
+            Serial.println("Measurement write was not succesfull");
+
+            continue;
+        }
+        // TODO check for good time between messages
+        delay(3000);
+
+        // TODO: wait for acknowledge and maybe delay between messages
+    }
+
+    // TODO check if all meassages are sent correctly
+    measurement_handler->ClearMeasurements();
     succes = true;
 }
 

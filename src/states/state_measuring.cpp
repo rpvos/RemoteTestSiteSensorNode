@@ -3,8 +3,9 @@
 StateMeasuring::StateMeasuring(SensorController *controller)
 {
     this->amount_of_measurements = 0;
-
     this->controller = controller;
+
+    this->is_done_measuring = false;
 }
 
 StateMeasuring::~StateMeasuring()
@@ -38,19 +39,22 @@ void StateMeasuring::ClearMeasurements()
     this->amount_of_measurements = 0;
 }
 
+bool StateMeasuring::Predicate()
+{
+    return is_done_measuring;
+}
+
 void StateMeasuring::PreFunction()
 {
-#ifdef DEBUG_PRINT
-    Serial.println("Start measurement");
-#endif
+    Serial.println("Check for all measurements");
 }
 
 void StateMeasuring::ExecuteFunction()
 {
-    succes = controller->StartMeasurement();
+    // Set to done when next measurement is not now
+    is_done_measuring = controller->TimeUntillNextMeasurement();
 }
 
 void StateMeasuring::PostFunction()
 {
-    succes = false;
 }
